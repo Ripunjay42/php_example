@@ -53,6 +53,7 @@ $conn->close();
         
         <input type="submit" value="Submit Feedback">
     </form>
+    <button id="logout"><a href="logout.php">logout</a></button>
 </body>
 </html>
 

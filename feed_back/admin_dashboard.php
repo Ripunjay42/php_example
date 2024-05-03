@@ -65,6 +65,7 @@ $result = $conn->query($sql);
             ?>
         </tbody>
     </table>
+    <button id="logout"><a href="admin_logout.php">logout</a></button>
 </body>
 </html>
 

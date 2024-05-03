@@ -1,46 +1,63 @@
 <?php
-session_start();
 
+$username = "";
+$password = "";
+$login_err = "";
+
+session_start();
 $servername = "localhost";
 $username = "root";
 $password = "Harami12";
 $dbname = "b_assign10_insert"; 
 
 $conn = new mysqli($servername, $username, $password, $dbname);
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
 
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = $_POST['username'];
-    $password = $_POST['password'];
 
-    // Prepare SQL statement to retrieve admin details
-    $stmt = $conn->prepare("SELECT * FROM admin WHERE username = ?");
+    // Set username and password from POST data
+    $username = trim($_POST["username"]);
+    $password = trim($_POST["password"]);
+  
+    // Prepare a select statement with parameter binding
+    $sql = "SELECT password FROM admin WHERE username = ?";
+    $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $username);
+  
+    // Execute the prepared statement
     $stmt->execute();
     $result = $stmt->get_result();
-
+  
+    // Check if username exists and fetch password
     if ($result->num_rows == 1) {
-        $row = $result->fetch_assoc();
-        // Verify password
-        if (password_verify($password, $row['password'])) {
-            // Set session variables
-            $_SESSION["admin"] = $username;
-            header("Location: admin_dashboard.php");
-            exit();
-        } else {
-            $error = "Invalid username or password";
-        }
-    } else {
-        $error = "Invalid username or password";
+      $row = $result->fetch_assoc();
+      $stored_password = $row["password"]; // Assuming password is stored in plain text (NOT RECOMMENDED)
     }
-
+  
+    // Close the prepared statement and result set
     $stmt->close();
-    $conn->close();
-}
-?>
+    $result->close();
+  
+    // Validate credentials (using plain text password comparison - NOT SECURE)
+    if (empty($username)) {
+      $login_err = "Please enter username.";
+    } else if (empty($password)) {
+      $login_err = "Please enter password.";
+    } else if ($password != $stored_password) { // Validate against plain text password (UNSAFE)
+      $login_err = "Invalid username or password.";
+    }
+  
+    // If credentials are valid, create session variables and redirect
+    if (empty($login_err)) {
+      $_SESSION["loggedin"] = true;
+      $_SESSION["username"] = $username;
+      header("location: admin_dashboard.php"); 
+    }
+  }
+  
+  // Close database connection
+  $conn->close();
+  ?>
 
 <!DOCTYPE html>
 <html lang="en">
